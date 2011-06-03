@@ -10,13 +10,20 @@ body {
   font: 10px sans-serif;
 }
 
+#container {
+  overflow: hidden;
+}
+
     </style>
   </head>
   <body>
-    <canvas id="map" width="960" height="500"></canvas>
+    <div id="container" style="width: 960px; height: 500px">
+      <canvas xmlns="http://www.w3.org/1999/xhtml" id="map" width="1920" height="1000"></canvas>
+    </div>
     <script type="text/javascript">
 
-var canvas = d3.select("#map").node(),
+var map = d3.select("#map"),
+    canvas = map.node(),
     context = canvas.getContext("2d");
 
 var w = canvas.width,
@@ -39,6 +46,34 @@ var image = pixymaps.image()
     + "/1a1b06b230af4efdbb989ea99e9841af" // http://cloudmade.com/register
     + "/999/256/{Z}/{X}/{Y}.png")
     .hosts(["a.", "b.", "c.", ""]));
+
+var translate = [-480, -250];
+
+var container = d3.select("#container")
+    .on("mousedown", function() {
+      var e = d3.event,
+          m = [e.clientX, e.clientY],
+          translate0 = translate.slice();
+      d3.select(window)
+        .on("mousemove", function() {
+          var e = d3.event;
+          translate[0] = translate0[0] + e.clientX - m[0];
+          translate[1] = translate0[1] + e.clientY - m[1];
+          redraw();
+        })
+        .on("mouseup", function() {
+          d3.select(window)
+            .on("mousemove", null)
+            .on("mouseup", null);
+        });
+    });
+
+function redraw() {
+  map.style("-webkit-transform",
+    "translate(" + translate.join("px,") + "px)");
+}
+
+redraw();
 
 image.render(context, function() {
   console.log("hooray");
