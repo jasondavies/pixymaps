@@ -49,6 +49,8 @@ var image = pixymaps.image()
 
 var translate = [-480, -250];
 
+var rendering = false;
+
 var container = d3.select("#container")
     .on("mousedown", function() {
       var e = d3.event,
@@ -60,6 +62,23 @@ var container = d3.select("#container")
           translate[0] = translate0[0] + e.clientX - m[0];
           translate[1] = translate0[1] + e.clientY - m[1];
           redraw();
+          // Re-blit
+          var pan = [
+            translate[0] >= 0 ? 480 : translate[0] < -960 ? -480 : 0,
+            translate[1] >= 0 ? 250 : translate[1] < -500 ? -250 : 0
+          ];
+          if (!rendering && (pan[0] || pan[1])) {
+            view.panBy(pan);
+            rendering = true;
+            image.render(context, function() {
+              rendering = false;
+              translate[0] -= pan[0];
+              translate[1] -= pan[1];
+              translate0[0] -= pan[0];
+              translate0[1] -= pan[1];
+              redraw();
+            });
+          }
         })
         .on("mouseup", function() {
           d3.select(window)
